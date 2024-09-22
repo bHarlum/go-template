@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: yourusername
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: yourdatabase
+    ports:
+      - "5432:5432"
+
+  flyway:
+    image: flyway/flyway
+    command: -url=jdbc:postgresql://db:5432/yourdatabase -user=yourusername -password=yourpassword -connectRetries=60 migrate
+    volumes:
+      - .:/src/db/migrations:/flyway/sql
+      - .:/src/flyway.conf:./flyway.conf
+    depends_on:
+      - db
+
+  sqlc:
+    image: kjconroy/sqlc
+    volumes:
+      - .:/src
+    working_dir: /src
+    command: ["generate"]
